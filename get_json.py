@@ -2,21 +2,24 @@ import json
 import requests
 
 class GetJson():
-    def get_match_first_json(self, match_num):
+    def __init__(self, match_num):
         ### 試合事前情報を取得 ###
         token = { "Authorization": "procon30_example_token" }
         url = "http://localhost:8081/matches"
         all_matches_data = requests.get(url, headers=token).json()
         ########################
+        self.match_my_teamID = all_matches_data[match_num]["teamID"]
+        self.id = all_matches_data[match_num]["id"]
 
-        return all_matches_data[match_num]
+    def team_id(self):
+        return self.id
 
     def get_match_json(self, match_id):
         ### 試合情報を取得 ###
         token = { "Authorization": "procon30_example_token" }
         url = "http://localhost:8081/matches/{0}".format(match_id)
         all_matches_data = requests.get(url, headers=token).json()
-        ########################
+        #####################
         
         ### 各試合情報の初期化 ###
         self.match_width = all_matches_data["width"]
@@ -25,15 +28,23 @@ class GetJson():
         self.match_startedAtUnixTime = all_matches_data["startedAtUnixTime"]
         self.match_turn = all_matches_data["turn"]
         self.match_tiled = all_matches_data["tiled"]
-        self.match_my_teamID = all_matches_data["teams"][0]["teamID"]
         self.match_my_agents = all_matches_data["teams"][0]["agents"]
         self.match_my_tilePoint = all_matches_data["teams"][0]["tilePoint"]
         self.match_my_areaPoint = all_matches_data["teams"][0]["areaPoint"]
-        self.match_rival_teamID = all_matches_data["teams"][1]["teamID"]
         self.match_rival_agents = all_matches_data["teams"][1]["agents"]
         self.match_rival_tilePoint = all_matches_data["teams"][1]["tilePoint"]
         self.match_rival_areaPoint = all_matches_data["teams"][1]["areaPoint"]
         self.match_actions = all_matches_data["actions"]
+
+        if all_matches_data["teams"][0]["teamID"] == self.match_my_teamID:
+            pass
+        else:
+            self.match_rival_teamID = all_matches_data["teams"][0]["teamID"]
+        
+        if all_matches_data["teams"][1]["teamID"] == self.match_my_teamID:
+            pass
+        else:
+            self.match_rival_teamID = all_matches_data["teams"][1]["teamID"]
         #########################
 
     def width(self):
