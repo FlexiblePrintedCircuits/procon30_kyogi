@@ -1,11 +1,70 @@
 from get_json import GetJson
 from send_json import SendJson
-import math
 import random
 
 class Solver():
-    def __init__(self):
-        self.wood = {}
+    def __init__(self, field, my_num, rival_num, agents):
+        ### 各種変数の初期化 ###
+        self.field = field
+        self.my_num = my_num
+        self.rival_num = rival_num
+        self.agents = agents
+        #######################
+    
+    def solve(self):
+        agents = self.agents
+        action_dic = {"actions": []}
+
+        ### 行動情報を辞書に格納 ###
+        for i in agents:
+            agent_action = MonteCarlo(self.field, i["x"] - 1, i["y"] - 1, self.my_num, self.rival_num)
+            action = agent_action.playout()
+            try:
+                if action == "right":
+                    if self.field[i["y"] - 1][i["x"]] == self.rival_num:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "remove", "dx": 1, "dy": 0})
+                    else:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "move", "dx": 1, "dy": 0})
+                elif action == "left":
+                    if self.field[i["y"] - 1][i["x"] - 2] == self.rival_num:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "remove", "dx": -1, "dy": 0})
+                    else:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "move", "dx": -1, "dy": 0})
+                elif action == "up":
+                    if self.field[i["y"] - 2][i["x"] - 1] == self.rival_num:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "remove", "dx": 0, "dy": 1})
+                    else:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "move", "dx": 0, "dy": 1})
+                elif action == "down":
+                    if self.field[i["y"]][i["x"] - 1] == self.rival_num:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "remove", "dx": 0, "dy": -1})
+                    else:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "move", "dx": 0, "dy": -1})
+                elif action == "right_up":
+                    if self.field[i["y"] - 2][i["x"]] == self.rival_num:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "remove", "dx": 1, "dy": 1})
+                    else:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "move", "dx": 1, "dy": 1})
+                elif action == "right_down":
+                    if self.field[i["y"]][i["x"]] == self.rival_num:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "remove", "dx": 1, "dy": -1})
+                    else:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "move", "dx": 1, "dy": -1})
+                elif action == "left_up":
+                    if self.field[i["y"] - 2][i["x"] - 2] == self.rival_num:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "remove", "dx": -1, "dy": 1})
+                    else:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "move", "dx": -1, "dy": 1})
+                elif action == "left_down":
+                    if self.field[i["y"]][i["x"] - 2] == self.rival_num:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "remove", "dx": -1, "dy": -1})
+                    else:
+                        action_dic["actions"].append({"agentID": i["agentID"], "type": "move", "dx": -1, "dy": -1})
+            except:
+                action_dic["actions"].append({"agentID": i["agentID"], "type": "stay", "dx": 0, "dy": 0})
+        ###########################
+
+        return action_dic
 
 class MonteCarlo():
     def __init__(self, field, x, y, my_num, rival_num):
@@ -30,7 +89,62 @@ class MonteCarlo():
 
         for m in ["right", "left", "up", "down", "right_up", "right_down", "left_up", "left_down"]:
             field = self.field
-            for i in range(20):
+            
+            if m == "right":
+                try:
+                    field[y][x + 1] = self.my_num
+                    x += 1
+                except:
+                    pass
+            elif m == "left":
+                try:
+                    field[y][x - 1] = self.my_num
+                    x -= 1
+                except:
+                    pass
+            elif m == "up":
+                try:
+                    field[y - 1][x] = self.my_num
+                    y -= 1
+                except:
+                    pass
+            elif m == "down":
+                try:
+                    field[y + 1][x] = self.my_num
+                    y += 1
+                except:
+                    pass
+            elif m == "right_up":
+                try:
+                    field[y - 1][x + 1] = self.my_num
+                    y -= 1
+                    x += 1
+                except:
+                    pass
+            elif m == "right_down":
+                try:
+                    field[y + 1][x + 1] = self.my_num
+                    y += 1
+                    x += 1
+                except:
+                    pass
+            elif m == "left_up":
+                try:
+                    field[y - 1][x - 1] = self.my_num
+                    y -= 1
+                    x -= 1
+                except:
+                    pass
+            elif m == "left_down":
+                try:
+                    field[y + 1][x - 1] = self.my_num
+                    y += 1
+                    x -= 1
+                except:
+                    pass
+
+            ### 30回のプレイアウトを実施 ###
+            for i in range(30):
                 i += 1
                 ### 相手チームエージェントの座標を適当に取得 ###
                 for j in range(len(field)):
@@ -41,8 +155,6 @@ class MonteCarlo():
                     if rx != None:
                         break
                 #############################################
-
-                print(field)
 
                 ### プレイアウトを実施 ###
                 for j in range(40):
@@ -57,12 +169,13 @@ class MonteCarlo():
                 self.wood[m][1] += self.win(field)
                 self.wood[m][2] = self.wood[m][1] / self.wood[m][0]
                 ###############
+            
+            ################################
         
         ### 最も勝率の高い手を返す ###
         max_probability = self.wood["right"][2]
         max_probability_key = "right"
         for key, value in self.wood.items():
-            print(key, value)
             if value[2] > max_probability:
                 max_probability = value[2]
                 max_probability_key = key
